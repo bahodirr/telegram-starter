@@ -15,6 +15,7 @@ export const SurgentPlugin: Plugin = async (ctx) => {
   $.cwd(directory)
 
   const baseUrl = process.env.SURGENT_AI_BASE_URL
+  const apiKey = process.env.SURGENT_API_KEY
 
   async function readConfig(): Promise<SurgentConfig> {
     try {
@@ -57,7 +58,7 @@ export const SurgentPlugin: Plugin = async (ctx) => {
           ...config.provider[id],
           options: {
             ...config.provider[id]?.options,
-            apiKey: "{env:SURGENT_API_KEY}",
+            apiKey: apiKey,
             baseURL: `${baseUrl}/${id}`,
           },
         }
