@@ -1,6 +1,8 @@
 import { type Plugin, tool } from "@opencode-ai/plugin"
 import { z } from "zod"
 
+const PROVIDERS = ["anthropic", "openai", "google", "vercel", "xai", "zai-org", "moonshotai"]
+
 type SurgentConfig = {
   name?: string
   scripts?: {
@@ -8,8 +10,11 @@ type SurgentConfig = {
   }
 }
 
-export const SurgentDeployPlugin: Plugin = async ({ $, directory }) => {
+export const SurgentPlugin: Plugin = async (ctx) => {
+  const { $, directory } = ctx
   $.cwd(directory)
+
+  const baseUrl = process.env.SURGENT_AI_BASE_URL
 
   async function readConfig(): Promise<SurgentConfig> {
     try {
@@ -42,6 +47,23 @@ export const SurgentDeployPlugin: Plugin = async ({ $, directory }) => {
   }
 
   return {
+    async config(config) {
+      if (!baseUrl) return
+
+      config.provider ??= {}
+
+      for (const id of PROVIDERS) {
+        config.provider[id] = {
+          ...config.provider[id],
+          options: {
+            ...config.provider[id]?.options,
+            apiKey: "{env:SURGENT_API_KEY}",
+            baseURL: `${baseUrl}/${id}`,
+          },
+        }
+      }
+    },
+
     tool: {
       dev: tool({
         description: "Start the bot server if not already running",
